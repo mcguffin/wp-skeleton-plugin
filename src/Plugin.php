@@ -13,7 +13,7 @@ if ( ! defined('ABSPATH') ) {
 
 use McGuffin\Core;
 
-abstract class Plugin extends Core\Singleton implements Core\ComponentInterface,Core\CoreInterface {
+abstract class Plugin extends Core\Core implements Core\ComponentInterface,Core\CoreInterface {
 
 	/** @var string plugin main file */
 	private $plugin_file;
@@ -38,6 +38,8 @@ abstract class Plugin extends Core\Singleton implements Core\ComponentInterface,
 
 		add_action( 'plugins_loaded', [ $this, 'load_textdomain' ] );
 
+		Core\Core::set( $this );
+
 		parent::__construct();
 
 	}
@@ -52,7 +54,7 @@ abstract class Plugin extends Core\Singleton implements Core\ComponentInterface,
 	/**
 	 *	@return string full plugin file path
 	 */
-	public function get_plugin_dir() {
+	public function get_package_dir() {
 		return plugin_dir_path( $this->get_plugin_file() );
 	}
 
@@ -80,7 +82,7 @@ abstract class Plugin extends Core\Singleton implements Core\ComponentInterface,
 	/**
 	 *	Deactivation hook
 	 */
-	public static function uninstall() {
+	public function uninstall() {
 
 	}
 
@@ -89,24 +91,15 @@ abstract class Plugin extends Core\Singleton implements Core\ComponentInterface,
 	 */
 	public function get_asset_roots() {
 		return [
-			$this->get_plugin_dir() => $this->get_plugin_url(),
+			$this->get_package_dir() => $this->get_plugin_url(),
 		];
 	}
-
 
 	/**
 	 *	@return string plugin slug
 	 */
 	public function get_slug() {
-		return basename( $this->get_plugin_dir() );
-	}
-
-
-	/**
-	 *	@return string plugin prefix
-	 */
-	public function get_prefix() {
-		return $this->plugin_prefix;
+		return basename( $this->get_package_dir() );
 	}
 
 	/**
@@ -114,16 +107,6 @@ abstract class Plugin extends Core\Singleton implements Core\ComponentInterface,
 	 */
 	public function get_wp_plugin() {
 		return plugin_basename( $this->get_plugin_file() );
-	}
-
-	/**
-	 *	@return string current plugin version
-	 */
-	public function version() {
-		if ( is_null( $this->_version ) ) {
-			$this->_version = include_once $this->get_plugin_dir() . '/include/version.php';
-		}
-		return $this->_version;
 	}
 
 	/**
@@ -147,7 +130,7 @@ abstract class Plugin extends Core\Singleton implements Core\ComponentInterface,
 	public function maybe_upgrade() {
 		// trigger upgrade
 		$new_version = $this->version();
-		$old_version = get_site_option( $this->plugin_prefix . '_version' );
+		$old_version = get_site_option( $this->get_prefix() . '_version' );
 
 		// call upgrade
 		if ( version_compare($new_version, $old_version, '>' ) ) {
@@ -157,7 +140,6 @@ abstract class Plugin extends Core\Singleton implements Core\ComponentInterface,
 			update_site_option( $this->plugin_prefix . '_version', $new_version );
 
 		}
-
 	}
 
 	/**
