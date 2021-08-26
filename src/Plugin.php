@@ -137,7 +137,7 @@ abstract class Plugin extends Core\Core implements Core\ComponentInterface,Core\
 
 			$this->upgrade( $new_version, $old_version );
 
-			update_site_option( $this->plugin_prefix . '_version', $new_version );
+			update_site_option( $this->get_prefix() . '_version', $new_version );
 
 		}
 	}
