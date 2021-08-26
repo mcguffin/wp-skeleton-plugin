@@ -5,7 +5,7 @@
  *	2018-09-22
  */
 
-namespace McGuffin\Core;
+namespace McGuffin\Plugin;
 
 if ( ! defined('ABSPATH') ) {
 	die('FU!');
