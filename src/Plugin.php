@@ -32,12 +32,11 @@ abstract class Plugin extends Core\Singleton implements Core\ComponentInterface,
 
 		$this->plugin_file = $file;
 
-		register_activation_hook( $this->get_plugin_file(), array( $this , 'activate' ) );
-		register_deactivation_hook( $this->get_plugin_file(), array( $this , 'deactivate' ) );
+		register_activation_hook( $this->get_plugin_file(), [ $this , 'activate' ] );
+		register_deactivation_hook( $this->get_plugin_file(), [ $this , 'deactivate' ] );
+		register_uninstall_hook( $this->get_plugin_file(), [ __CLASS__, 'uninstall' ] );
 
-		add_action( 'admin_init', array( $this, 'maybe_upgrade' ) );
-
-		add_action( 'plugins_loaded' , array( $this , 'load_textdomain' ) );
+		add_action( 'plugins_loaded', [ $this, 'load_textdomain' ] );
 
 		parent::__construct();
 
@@ -64,7 +63,26 @@ abstract class Plugin extends Core\Singleton implements Core\ComponentInterface,
 		return plugin_dir_url( $this->get_plugin_file() );
 	}
 
+	/**
+	 *	Activation hook
+	 */
+	public function activate() {
 
+	}
+
+	/**
+	 *	Deactivation hook
+	 */
+	public function deactivate() {
+
+	}
+
+	/**
+	 *	Deactivation hook
+	 */
+	public static function uninstall() {
+
+	}
 
 	/**
 	 *	@inheritdoc
@@ -143,76 +161,11 @@ abstract class Plugin extends Core\Singleton implements Core\ComponentInterface,
 	}
 
 	/**
-	 *	Load text domain
-	 *
-	 *  @action plugins_loaded
+	 *  @inheritdoc
 	 */
 	public function load_textdomain() {
 		$path = pathinfo( $this->get_wp_plugin(), PATHINFO_DIRNAME );
-		load_plugin_textdomain( 'local-font-library', false, $path . '/languages' );
-	}
-
-
-
-	/**
-	 *	Fired on plugin activation
-	 */
-	public function activate() {
-
-		$this->maybe_upgrade();
-
-		foreach ( self::$components as $component ) {
-			$comp = $component::instance();
-			$comp->activate();
-		}
-	}
-
-
-	/**
-	 *	Fired on plugin updgrade
-	 *
-	 *	@param string $nev_version
-	 *	@param string $old_version
-	 *	@return array(
-	 *		'success' => bool,
-	 *		'messages' => array,
-	 * )
-	 */
-	public function upgrade( $new_version, $old_version ) {
-
-		$result = array(
-			'success'	=> true,
-			'messages'	=> array(),
-		);
-
-		foreach ( self::$components as $component ) {
-			$comp = $component::instance();
-			$upgrade_result = $comp->upgrade( $new_version, $old_version );
-			$result['success'] 		&= $upgrade_result['success'];
-			$result['messages'][]	=  $upgrade_result['message'];
-		}
-
-		return $result;
-	}
-
-	/**
-	 *	Fired on plugin deactivation
-	 */
-	public function deactivate() {
-		foreach ( self::$components as $component ) {
-			$comp = $component::instance();
-			$comp->deactivate();
-		}
-	}
-
-	/**
-	 *	Fired on plugin deinstallation
-	 */
-	public function uninstall() {
-		foreach ( self::$components as $component ) {
-			$comp = $component::instance();
-			$comp->uninstall();
-		}
+		load_plugin_textdomain( $this->get_slug(), false, $path . '/languages' );
 	}
 
 }
